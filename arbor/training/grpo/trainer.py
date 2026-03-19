@@ -16,7 +16,7 @@ import torch
 import transformers
 import wandb
 from accelerate.utils import broadcast_object_list, is_peft_model
-from peft import LoraConfig
+from peft import LoraConfig, get_peft_model
 from torch.utils.data import DataLoader, Dataset
 from transformers import (
     AutoConfig,
@@ -28,7 +28,7 @@ from transformers import (
 from transformers.trainer import Trainer
 from transformers.trainer_callback import TrainerCallback
 from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR, seed_worker
-from trl.models import prepare_deepspeed, prepare_peft_model
+from trl.models.utils import prepare_deepspeed
 from trl.trainer.callbacks import SyncRefModelCallback
 from trl.trainer.utils import (
     disable_dropout_in_model,
@@ -139,7 +139,7 @@ class ArborGRPOTrainer(Trainer):
         )
 
         if args.lora_config is not None:
-            model = prepare_peft_model(model, args.lora_config, args)
+            model = get_peft_model(model, args.lora_config)
             # Override sync_ref_model if PEFT is used since ref_model will be None
             if args.sync_ref_model:
                 self.logger.warning(
